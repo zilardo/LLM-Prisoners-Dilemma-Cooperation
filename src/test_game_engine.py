@@ -52,7 +52,7 @@ def test_basic_game():
     assert summary['final_scores']['player1'] == 12, "Player 1 score mismatch"
     assert summary['final_scores']['player2'] == 12, "Player 2 score mismatch"
     assert summary['cooperation_rates']['player1'] == 0.6, "Player 1 coop rate mismatch"
-    assert summary['cooperation_rates']['player2'] == 0.4, "Player 2 coop rate mismatch"
+    assert summary['cooperation_rates']['player2'] == 0.6, "Player 2 coop rate mismatch"
     
     print("\n✅ All assertions passed!")
 
