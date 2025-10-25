@@ -47,7 +47,7 @@ class ContextBuilder:
             A dictionary structured for the decision prompt.
         """
         
-        my_score, opponent_score = game_state.get_scores()
+        my_score, opponent_score = game_state.score1, game_state.score2
         if role == "Player 2":
             my_score, opponent_score = opponent_score, my_score
             
