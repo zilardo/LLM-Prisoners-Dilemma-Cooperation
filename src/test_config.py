@@ -20,7 +20,7 @@ def test_load_main_config():
     print("Testing Main Config Loading")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     
     try:
         config = loader.load()
@@ -90,7 +90,7 @@ def test_model_access(config):
     print("Testing Model Access")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     loader.config = config
     
     # Test getting models by index
@@ -119,7 +119,7 @@ def test_condition_access(config):
     print("Testing Condition Access")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     loader.config = config
     
     # Test getting conditions by name
@@ -145,7 +145,7 @@ def test_validation_config(config):
     print("Testing Validation Config Export")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     loader.config = config
     
     val_config = loader.get_validation_config()
@@ -171,7 +171,7 @@ def test_model_pair_validation(config):
     print("Testing Model Pair Validation")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     loader.config = config
     
     # Should pass with valid pairs
@@ -259,7 +259,7 @@ def test_run_mode_selection():
     print("Testing Run Mode Selection")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     config = loader.load()
     
     run_mode = config.run_mode
@@ -277,7 +277,7 @@ def test_config_values():
     print("Testing Specific Config Values")
     print("=" * 50)
     
-    loader = ConfigLoader("config/experiment_config.yaml")
+    loader = ConfigLoader("../config/experiment_config.yaml")
     config = loader.load()
     
     # Test budget
