@@ -6,6 +6,9 @@ For real API testing, uncomment the first line
 """
 # USE_API = True
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import sys
 import os
 sys.path.append('src')
