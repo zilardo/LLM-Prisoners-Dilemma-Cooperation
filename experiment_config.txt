@@ -1,0 +1,168 @@
+# Experiment Configuration for LLM Prisoner's Dilemma POC
+
+# Experiment Metadata
+experiment:
+  name: "poc_short_games"
+  description: "Proof of concept with short games only, testing communication effects"
+  version: "0.1.0"
+  
+  # Run mode: 'single' for one game, 'small' for limited batch, 'full' for complete experiment
+  run_mode: 'single'  # Options: single, small, full
+  
+  # Number of repetitions per configuration based on run mode
+  repetitions:
+    single: 1
+    small: 3
+    full: 10
+
+# Game Configuration
+game:
+  # Game length (number of rounds)
+  length: 5  # Short games only for POC
+  
+  # Termination probability (informational for models, actual length is fixed)
+  termination_probability: 0.8
+  
+  # Payoff matrix: [player1_payoff, player2_payoff]
+  payoff_matrix:
+    cooperate_cooperate: [3, 3]
+    cooperate_defect: [0, 5]
+    defect_cooperate: [5, 0]
+    defect_defect: [1, 1]
+
+# Model Configuration
+models:
+  # Available models for the experiment
+  available:
+    - name: "gpt-3.5-turbo"
+      provider: "openai"
+      temperature: 0.7
+      max_tokens: 1000  # For decision responses
+      
+    - name: "gemini-2.0-flash-exp"
+      provider: "google"
+      temperature: 0.7
+      max_output_tokens: 1000  # For decision responses
+  
+  # Define which model pairs to test (indices from available list)
+  # [player1_index, player2_index]
+  # Note: Player 1 is always the first speaker in communication
+  pairs:
+    - [0, 0]  # gpt-3.5-turbo vs gpt-3.5-turbo
+    - [0, 1]  # gpt-3.5-turbo (first speaker) vs gemini-2.0-flash-exp
+    - [1, 0]  # gemini-2.0-flash-exp (first speaker) vs gpt-3.5-turbo
+    - [1, 1]  # gemini-2.0-flash-exp vs gemini-2.0-flash-exp
+
+# Communication Configuration
+communication:
+  # Enable/disable communication (set to false for baseline condition)
+  enabled: true
+  
+  # Initial dialogue settings (before first game in series)
+  initial_dialogue:
+    rounds: 3  # Number of back-and-forth exchanges (total: 6 messages)
+    max_chars_per_message: 200  # Maximum characters per message
+  
+  # Inter-game dialogue settings (between games in series)
+  inter_game_dialogue:
+    rounds: 1  # Number of back-and-forth exchanges (total: 2 messages)
+    max_chars_per_message: 200  # Maximum characters per message
+
+# Validation Configuration
+validation:
+  # Retry settings
+  max_retries: 1  # Number of retries per validation failure
+  max_consecutive_failures: 3  # Consecutive game failures before aborting run
+  
+  # Character limits for free text
+  max_reasoning_chars: 500  # Maximum characters for decision reasoning
+  max_message_chars: 200    # Maximum characters for communication messages
+  
+  # Message validation rules
+  message_validation:
+    required_keys: ["message"]
+    check_empty: true  # Reject empty messages
+    check_encoding: true  # Validate UTF-8 encoding
+  
+  # Decision validation rules
+  decision_validation:
+    required_keys: ["reasoning", "action"]
+    valid_actions: ["Cooperate", "Defect"]
+    check_empty_reasoning: true  # Reject empty reasoning
+
+# Storage Configuration
+storage:
+  # Output directories
+  output_dir: "data/results"
+  log_dir: "data/logs"
+  
+  # What to save
+  save_game_logs: true
+  save_communication_logs: true
+  save_reasoning_logs: true
+  save_metadata: true
+  
+  # Output format: json, csv, or both
+  format: "json"
+  
+  # File naming
+  timestamp_format: "%Y%m%d_%H%M%S"
+  include_config_in_output: true
+
+# Experiment Conditions
+conditions:
+  # Each condition will be run separately
+  - name: "baseline"
+    description: "No communication between models"
+    communication_enabled: false
+    
+  - name: "communication"
+    description: "With communication between models"
+    communication_enabled: true
+
+# Logging Configuration
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Console output
+  console_output: true
+  console_level: "INFO"
+  
+  # File output
+  file_output: true
+  file_level: "DEBUG"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # What to log
+  log_api_calls: true
+  log_api_responses: false  # Set to true for debugging (verbose)
+  log_validation_failures: true
+  log_retry_attempts: true
+
+# API Configuration
+api:
+  # Retry settings for API calls
+  max_api_retries: 3
+  retry_delay: 1  # seconds
+  exponential_backoff: true
+  
+  # Timeout settings
+  timeout: 30  # seconds
+  
+  # Rate limiting
+  requests_per_minute: 60
+  
+  # Cost tracking
+  track_costs: true
+  cost_alert_threshold: 5.0  # dollars
+
+# Random Seed (for reproducibility)
+random_seed: 42
+
+# Budget Warning
+budget:
+  max_budget_usd: 10.0
+  warn_at_percentage: 80  # Warn when 80% of budget used
