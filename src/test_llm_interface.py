@@ -2,8 +2,9 @@
 Test script for LLM interfaces.
 
 This tests the basic structure without making real API calls.
-For real API testing, uncomment the sections at the bottom.
+For real API testing, uncomment the first line
 """
+# USE_API = True
 
 import sys
 import os
@@ -248,8 +249,12 @@ if __name__ == "__main__":
     print("\n" + "=" * 50)
     print("Optional: Real API Tests")
     print("=" * 50)
-    
-    response = input("\nTest real APIs? This will use API quota/credits (y/N): ")
+
+    if "USE_API" in globals() and USE_API is True:
+        reponse = 'y'
+    else:
+        response = input("\nTest real APIs? This will use API quota/credits (y/N): ")
+        
     if response.lower() == 'y':
         test_real_openai_api()
         test_real_gemini_api()
