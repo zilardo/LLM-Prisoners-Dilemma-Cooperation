@@ -6,15 +6,15 @@ For real API testing, uncomment the first line
 """
 # USE_API = True
 
-# Build the path to the .env file (one level up from this file's directory)
 from dotenv import load_dotenv
-dotenv_path = Path(__file__).parent.parent / ".env"
-load_dotenv(dotenv_path=dotenv_path)
-
+from pathlib import Path
 from models.base import BaseLLM
 from models.openai_model import OpenAIModel
 from models.gemini_model import GeminiModel
 
+# Build the path to the .env file (one level up from this file's directory)
+dotenv_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=dotenv_path)
 
 class MockLLM(BaseLLM):
     """Mock LLM for testing without API calls."""
