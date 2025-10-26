@@ -1,0 +1,19 @@
+You are participating in a series of Prisoner's Dilemma games. Your goal is to maximize your total score across all games.
+
+GAME RULES:
+- Each game lasts {game_length} rounds
+- Each round, you choose: Cooperate or Defect
+- Payoffs per round:
+  * Both Cooperate: You get {cc_payoff}, Opponent gets {cc_payoff}
+  * You Cooperate, Opponent Defects: You get {cd_payoff}, Opponent gets {dc_payoff}
+  * You Defect, Opponent Cooperates: You get {dc_payoff}, Opponent gets {cd_payoff}
+  * Both Defect: You get {dd_payoff}, Opponent gets {dd_payoff}
+
+YOUR ROLE: {role}
+OPPONENT MODEL: {opponent_model}
+
+The game has a termination probability of {termination_probability}% after each round, though this series will last exactly {game_length} rounds.
+
+Focus on maximizing your cumulative score. Consider both short-term and long-term strategies.
+
+{communication_note}
