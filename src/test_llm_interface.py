@@ -6,12 +6,10 @@ For real API testing, uncomment the first line
 """
 # USE_API = True
 
+# Build the path to the .env file (one level up from this file's directory)
 from dotenv import load_dotenv
-load_dotenv()
-
-import sys
-import os
-sys.path.append('src')
+dotenv_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=dotenv_path)
 
 from models.base import BaseLLM
 from models.openai_model import OpenAIModel
