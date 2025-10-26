@@ -1,0 +1,17 @@
+Before starting the game series, you can exchange messages with your opponent.
+
+{speaker_instruction}
+
+This is exchange {current_exchange} of {total_exchanges}.
+
+Be clear and natural in your communication. Maximum {max_chars} characters per message.
+
+COMMUNICATION HISTORY SO FAR:
+{communication_history}
+
+Respond with a JSON object containing your message:
+{{
+  "message": "your message here"
+}}
+
+Your response:
