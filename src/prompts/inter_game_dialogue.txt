@@ -1,0 +1,21 @@
+The previous game has ended. Before starting the next game, you can send a message to your opponent.
+
+PREVIOUS GAME RESULTS:
+- Your score: {my_score}
+- Opponent score: {opponent_score}
+- Your cooperation rate: {my_coop_rate:.1%}
+- Opponent cooperation rate: {opponent_coop_rate:.1%}
+
+{speaker_instruction}
+
+Maximum {max_chars} characters.
+
+FULL COMMUNICATION HISTORY:
+{communication_history}
+
+Respond with a JSON object containing your message:
+{{
+  "message": "your message here"
+}}
+
+Your response:
