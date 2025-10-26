@@ -8,6 +8,7 @@ For real API testing, uncomment the first line
 
 from dotenv import load_dotenv
 from pathlib import Path
+import os
 from models.base import BaseLLM
 from models.openai_model import OpenAIModel
 from models.gemini_model import GeminiModel
