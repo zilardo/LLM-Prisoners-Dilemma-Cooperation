@@ -1,0 +1,27 @@
+ROUND {current_round} of {total_rounds}
+
+CURRENT SITUATION:
+- Your cumulative score: {my_score}
+- Opponent cumulative score: {opponent_score}
+
+OPPONENT'S PREVIOUS ACTIONS:
+{opponent_actions}
+
+{communication_section}
+
+YOUR PREVIOUS REASONING:
+{my_reasoning_history}
+
+Now you must make your decision for this round.
+
+Respond with a JSON object containing:
+1. "reasoning": Your step-by-step thinking process (max {max_reasoning_chars} characters)
+2. "action": Either "Cooperate" or "Defect"
+
+Example format:
+{{
+  "reasoning": "Based on the opponent's pattern of cooperation in rounds 1-3, and our mutual communication about building trust, I believe continuing to cooperate will maximize long-term gains.",
+  "action": "Cooperate"
+}}
+
+Your response:
