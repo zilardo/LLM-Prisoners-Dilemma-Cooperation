@@ -4,11 +4,11 @@ Communication Manager for orchestrating message exchanges between LLMs.
 
 from typing import List, Dict, Any, Tuple, Optional
 from pathlib import Path
-import json
 
 from models.base import BaseLLM
 from communication.validator import ResponseValidator
 from experiment.context import ContextBuilder
+from game.state import GameState
 
 
 class CommunicationManager:
@@ -41,7 +41,11 @@ class CommunicationManager:
     
     def _load_prompts(self) -> dict:
         """Load prompt templates from files."""
-        prompts_dir = Path(__file__).parent.parent.parent / "prompts"
+        # Get the prompts directory relative to this file
+        # This file is in src/communication/manager.py
+        # Prompts are in prompts/ at the project root
+        project_root = Path(__file__).parent.parent.parent
+        prompts_dir = project_root / "prompts"
         
         templates = {}
         template_files = {
@@ -54,7 +58,7 @@ class CommunicationManager:
         for key, filename in template_files.items():
             filepath = prompts_dir / filename
             if filepath.exists():
-                with open(filepath, 'r') as f:
+                with open(filepath, 'r', encoding='utf-8') as f:
                     templates[key] = f.read()
             else:
                 raise FileNotFoundError(f"Prompt template not found: {filepath}")
@@ -182,7 +186,7 @@ class CommunicationManager:
                                    player1_llm: BaseLLM,
                                    player2_llm: BaseLLM,
                                    first_speaker: int,
-                                   game_state: Any,
+                                   game_state: GameState,
                                    game_number: int) -> Tuple[bool, List[Dict[str, str]]]:
         """
         Conduct dialogue between games.
