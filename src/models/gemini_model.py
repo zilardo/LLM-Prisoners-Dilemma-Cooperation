@@ -7,6 +7,15 @@ from typing import Optional
 import google.generativeai as genai
 from .base import BaseLLM
 
+import logging
+
+# Suppress the "ALTS creds ignored" warning
+# This logger comes from the 'google-auth' library
+logging.getLogger('google.auth.transport.grpc').setLevel(logging.ERROR)
+
+# Suppress the "All log messages before absl::InitializeLog" warning
+# This logger comes from the 'absl' library, a gRPC dependency
+logging.getLogger('absl').setLevel(logging.ERROR)
 
 class GeminiModel(BaseLLM):
     """Google Gemini model interface."""
