@@ -75,7 +75,243 @@ def test_load_prompts():
         print(f"❌ Error: {e}")
         raise
     
-    print("\n✅ Prompt loading test passed!\n")
+    print("\n✅ History reset test passed!\n")
+
+
+def test_retry_logic(manager):
+    """Test retry logic for failed validations."""
+    print("=" * 50)
+    print("Testing Retry Logic")
+    print("=" * 50)
+    
+    # Create an LLM that fails first, then succeeds
+    class RetryMockLLM(BaseLLM):
+        def __init__(self):
+            super().__init__("retry-mock")
+            self.call_count = 0
+        
+        def generate_response(self, prompt: str, system_prompt: str = None) -> str:
+            self.call_count += 1
+            if self.call_count == 1:
+                return "invalid json"
+            else:
+                return '{"message": "Success on retry!"}'
+    
+    retry_llm = RetryMockLLM()
+    valid_llm = MockLLM("valid", response_type="valid")
+    
+    manager.reset_history()
+    
+    success, messages = manager.conduct_initial_dialogue(
+        player1_llm=retry_llm,
+        player2_llm=valid_llm,
+        first_speaker=1
+    )
+    
+    assert success, "Should succeed after retry"
+    print("✅ Successfully recovered from initial failure")
+    
+    # Should have made 2 calls for first message (fail + retry)
+    # Plus 2 more messages = 4 total for Player 1
+    assert retry_llm.call_count >= 4, f"Expected at least 4 calls, got {retry_llm.call_count}"
+    print(f"✅ Retry logic worked ({retry_llm.call_count} total calls)")
+    
+    print("\n✅ Retry logic test passed!\n")
+
+
+def test_max_retries_exceeded(manager):
+    """Test behavior when max retries are exceeded."""
+    print("=" * 50)
+    print("Testing Max Retries Exceeded")
+    print("=" * 50)
+    
+    # LLM that always fails
+    always_fail_llm = MockLLM("fail", response_type="invalid_json")
+    valid_llm = MockLLM("valid", response_type="valid")
+    
+    manager.reset_history()
+    
+    success, messages = manager.conduct_initial_dialogue(
+        player1_llm=always_fail_llm,
+        player2_llm=valid_llm,
+        first_speaker=1
+    )
+    
+    assert not success, "Should fail after max retries"
+    print("✅ Correctly failed after exhausting retries")
+    
+    # Should have attempted max_retries + 1 times
+    max_attempts = manager.max_retries + 1
+    assert always_fail_llm.call_count == max_attempts, f"Expected {max_attempts} attempts"
+    print(f"✅ Made {always_fail_llm.call_count} attempts (max_retries={manager.max_retries})")
+    
+    print("\n✅ Max retries test passed!\n")
+
+
+def test_message_content_validation(manager):
+    """Test that actual message content is validated properly."""
+    print("=" * 50)
+    print("Testing Message Content Validation")
+    print("=" * 50)
+    
+    # Test empty message
+    empty_llm = MockLLM("empty", response_type="empty_message")
+    valid_llm = MockLLM("valid", response_type="valid")
+    
+    manager.reset_history()
+    
+    success, messages = manager.conduct_initial_dialogue(
+        player1_llm=empty_llm,
+        player2_llm=valid_llm,
+        first_speaker=1
+    )
+    
+    assert not success, "Should fail with empty message"
+    print("✅ Empty messages correctly rejected")
+    
+    # Test too long message
+    long_llm = MockLLM("long", response_type="too_long")
+    
+    manager.reset_history()
+    
+    success, messages = manager.conduct_initial_dialogue(
+        player1_llm=long_llm,
+        player2_llm=valid_llm,
+        first_speaker=1
+    )
+    
+    assert not success, "Should fail with too long message"
+    print("✅ Overlong messages correctly rejected")
+    
+    print("\n✅ Message content validation test passed!\n")
+
+
+def test_inter_game_with_no_initial_history(manager):
+    """Test inter-game dialogue with empty initial history."""
+    print("=" * 50)
+    print("Testing Inter-Game Dialogue - No Initial History")
+    print("=" * 50)
+    
+    player1_llm = MockLLM("Player1", response_type="valid")
+    player2_llm = MockLLM("Player2", response_type="valid")
+    
+    # Create game state
+    game_state = GameState(game_length=5)
+    game_state.add_round("Cooperate", "Cooperate", 3, 3)
+    
+    manager.reset_history()
+    
+    # Conduct inter-game dialogue without any initial dialogue
+    success, messages = manager.conduct_inter_game_dialogue(
+        player1_llm=player1_llm,
+        player2_llm=player2_llm,
+        first_speaker=1,
+        game_state=game_state,
+        game_number=1
+    )
+    
+    assert success, "Should work even without initial history"
+    print("✅ Inter-game dialogue works without initial history")
+    
+    assert len(messages) == 2
+    print("✅ Correct number of messages")
+    
+    print("\n✅ Inter-game with no initial history test passed!\n")
+
+
+def test_multiple_games_history_accumulation(manager):
+    """Test that history accumulates correctly across multiple games."""
+    print("=" * 50)
+    print("Testing History Accumulation Across Games")
+    print("=" * 50)
+    
+    player1_llm = MockLLM("Player1", response_type="valid")
+    player2_llm = MockLLM("Player2", response_type="valid")
+    
+    game_state = GameState(game_length=5)
+    game_state.add_round("Cooperate", "Cooperate", 3, 3)
+    
+    manager.reset_history()
+    
+    # Initial dialogue
+    success1, msgs1 = manager.conduct_initial_dialogue(
+        player1_llm=player1_llm,
+        player2_llm=player2_llm,
+        first_speaker=1
+    )
+    assert success1
+    initial_count = len(manager.get_history())
+    print(f"✅ After initial dialogue: {initial_count} messages")
+    
+    # First inter-game
+    success2, msgs2 = manager.conduct_inter_game_dialogue(
+        player1_llm=player1_llm,
+        player2_llm=player2_llm,
+        first_speaker=1,
+        game_state=game_state,
+        game_number=1
+    )
+    assert success2
+    after_game1 = len(manager.get_history())
+    print(f"✅ After game 1: {after_game1} messages")
+    assert after_game1 == initial_count + 2
+    
+    # Second inter-game
+    success3, msgs3 = manager.conduct_inter_game_dialogue(
+        player1_llm=player1_llm,
+        player2_llm=player2_llm,
+        first_speaker=1,
+        game_state=game_state,
+        game_number=2
+    )
+    assert success3
+    after_game2 = len(manager.get_history())
+    print(f"✅ After game 2: {after_game2} messages")
+    assert after_game2 == initial_count + 4
+    
+    # Verify history contains all phases
+    history = manager.get_history()
+    initial_msgs = [m for m in history if m['phase'] == 'initial']
+    inter_game_msgs = [m for m in history if m['phase'] == 'inter_game']
+    
+    assert len(initial_msgs) == 6
+    assert len(inter_game_msgs) == 4
+    print("✅ History correctly contains all message phases")
+    
+    print("\n✅ History accumulation test passed!\n")
+
+
+if __name__ == "__main__":
+    # Initialize manager once for all tests
+    print("Initializing test environment...\n")
+    manager = test_load_prompts()
+    
+    # Run all tests
+    test_system_prompt_formatting(manager)
+    test_initial_dialogue_success(manager)
+    test_initial_dialogue_player2_first(manager)
+    test_initial_dialogue_validation_failure(manager)
+    test_inter_game_dialogue(manager)
+    test_communication_history_formatting(manager)
+    test_history_reset(manager)
+    test_retry_logic(manager)
+    test_max_retries_exceeded(manager)
+    test_message_content_validation(manager)
+    test_inter_game_with_no_initial_history(manager)
+    test_multiple_games_history_accumulation(manager)
+    
+    print("=" * 50)
+    print("🎉 ALL COMMUNICATION MANAGER TESTS PASSED!")
+    print("=" * 50)
+    print("\nTest Summary:")
+    print("  ✅ Prompt template loading")
+    print("  ✅ System prompt formatting")
+    print("  ✅ Initial dialogue (both speaker orders)")
+    print("  ✅ Inter-game dialogue")
+    print("  ✅ Validation and retry logic")
+    print("  ✅ History management")
+    print("  ✅ Error handling")
+    print("=" * 50) Prompt loading test passed!\n")
     return manager
 
 
