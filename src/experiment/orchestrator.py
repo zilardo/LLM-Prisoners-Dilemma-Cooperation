@@ -161,7 +161,7 @@ class ExperimentOrchestrator:
             'summary': summary,
             'reasoning_p1': reasoning_p1,
             'reasoning_p2': reasoning_p2,
-            'state': game.state
+            'state': game.state.to_dict()
         }
     
     def _get_player_decision(self, llm: BaseLLM, game_state, role: str,
