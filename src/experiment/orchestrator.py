@@ -176,7 +176,7 @@ class ExperimentOrchestrator:
             reasoning_history, opponent_actions
         )
         
-        # Format prompt (you'll need to implement this properly)
+        # Format prompt using pre-loaded template
         prompt = self._format_decision_prompt(context)
         
         # Get decision with retries
@@ -196,10 +196,9 @@ class ExperimentOrchestrator:
         return None
     
     def _format_decision_prompt(self, context: dict) -> str:
-        """Format decision prompt from context and template."""
-        # Load the decision prompt template
-        with open("prompts/decision_prompt.txt", 'r') as f:
-            template = f.read()
+        """Format decision prompt from context and pre-loaded template."""
+        # Use pre-loaded template from communication manager (already in memory)
+        template = self.comm_manager.prompts['decision']
         
         # Use the pre-formatted strings from context
         return template.format(
