@@ -6,7 +6,7 @@ for the LLM to make decisions or send messages.
 """
 
 from typing import List, Dict, Any
-from game.state import GameState, RoundResult
+from src.game.state import GameState, RoundResult
 
 class ContextBuilder:
     """Builds the context dictionary for LLM prompts."""
@@ -23,6 +23,8 @@ class ContextBuilder:
             "game_length": config['game']['length'],
             "termination_probability": config['game']['termination_probability']
         }
+        self.max_reasoning_chars = config['validation']['max_reasoning_chars']
+        self.max_message_chars = config['validation']['max_message_chars']
     
     def build_decision_context(self, 
                                game_state: GameState, 
@@ -44,31 +46,96 @@ class ContextBuilder:
             opponent_actions: List of the opponent's past actions.
         
         Returns:
-            A dictionary structured for the decision prompt.
+            A dictionary structured for the decision prompt with formatted strings.
         """
         
         my_score, opponent_score = game_state.score1, game_state.score2
         if role == "Player 2":
             my_score, opponent_score = opponent_score, my_score
-            
+        
+        # Format opponent actions for display
+        opponent_actions_formatted = self._format_opponent_actions(opponent_actions)
+        
+        # Format reasoning history for display
+        my_reasoning_formatted = self._format_reasoning_history(my_reasoning_history)
+        
+        # Format communication section for display
+        communication_section = self._format_communication_section(communication_history)
+        
         context = {
             "game_rules": self.game_rules,
             "role": role,
             "first_speaker": is_first_speaker,
-            "communication_history": communication_history,
-            "my_reasoning_history": my_reasoning_history,
-            "opponent_actions": opponent_actions,
+            "communication_history": communication_history,  # Raw data (for reference)
+            "my_reasoning_history": my_reasoning_history,   # Raw data (for reference)
+            "opponent_actions": opponent_actions,           # Raw data (for reference)
             "game_state": {
-                # Display 1-indexed round number to LLM
-                "current_round": game_state.current_round + 1, 
+                "current_round": game_state.current_round + 1,  # 1-indexed for display
                 "my_score": my_score,
                 "opponent_score": opponent_score,
-                # 0-indexed internal count
-                "rounds_played": game_state.current_round
-            }
+                "rounds_played": game_state.current_round  # 0-indexed
+            },
+            # Formatted strings for prompt templates
+            "opponent_actions_formatted": opponent_actions_formatted,
+            "my_reasoning_formatted": my_reasoning_formatted,
+            "communication_section": communication_section,
+            "total_rounds": self.game_rules['game_length'],
+            "max_reasoning_chars": self.max_reasoning_chars,
+            "current_round": game_state.current_round + 1  # For convenience
         }
         
         return context
+    
+    def _format_opponent_actions(self, actions: List[str]) -> str:
+        """Format opponent's action history for display."""
+        if not actions:
+            return "(No previous actions - this is the first round)"
+        
+        formatted = []
+        for i, action in enumerate(actions, 1):
+            formatted.append(f"Round {i}: {action}")
+        
+        return "\n".join(formatted)
+    
+    def _format_reasoning_history(self, reasoning_history: List[Dict[str, str]]) -> str:
+        """Format player's reasoning history for display."""
+        if not reasoning_history:
+            return "(No previous reasoning - this is your first decision)"
+        
+        formatted = []
+        for entry in reasoning_history:
+            round_num = entry['round']
+            reasoning = entry['reasoning']
+            action = entry['action']
+            # Truncate very long reasoning for display
+            if len(reasoning) > 150:
+                reasoning = reasoning[:147] + "..."
+            formatted.append(f"Round {round_num}: \"{reasoning}\" → {action}")
+        
+        return "\n".join(formatted)
+    
+    def _format_communication_section(self, comm_history: List[Dict[str, str]]) -> str:
+        """Format communication history for display."""
+        if not comm_history:
+            return "COMMUNICATION:\n(No communication in this game)"
+        
+        formatted = ["COMMUNICATION HISTORY:"]
+        
+        for msg in comm_history:
+            phase = msg.get('phase', 'unknown')
+            speaker = msg.get('speaker', 'Unknown')
+            message = msg.get('message', '')
+            
+            if phase == 'initial':
+                exchange = msg.get('exchange', '?')
+                formatted.append(f"  [Initial Exchange {exchange}] {speaker}: {message}")
+            elif phase == 'inter_game':
+                game_num = msg.get('game_number', '?')
+                formatted.append(f"  [After Game {game_num}] {speaker}: {message}")
+            else:
+                formatted.append(f"  {speaker}: {message}")
+        
+        return "\n".join(formatted)
 
     def build_initial_dialogue_context(self,
                                          role: str, 
@@ -93,7 +160,8 @@ class ContextBuilder:
             "role": role,
             "first_speaker": is_first_speaker,
             "communication_history": communication_history,
-            "current_exchange": current_exchange
+            "current_exchange": current_exchange,
+            "max_chars": self.max_message_chars
         }
 
     def build_inter_game_dialogue_context(self,
@@ -122,7 +190,7 @@ class ContextBuilder:
         if role == "Player 2":
             my_score, opponent_score = opponent_score, my_score
             my_coop_rate, opp_coop_rate = opp_coop_rate, my_coop_rate
-            
+        
         return {
             "game_rules": self.game_rules,
             "role": role,
@@ -133,7 +201,8 @@ class ContextBuilder:
                 "opponent_score": opponent_score,
                 "my_cooperation_rate": my_coop_rate,
                 "opponent_cooperation_rate": opp_coop_rate
-            }
+            },
+            "max_chars": self.max_message_chars
         }
 
     def build_round_feedback_message(self, game_state: GameState, role: str) -> str:
