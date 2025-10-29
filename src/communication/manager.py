@@ -5,8 +5,8 @@ Communication Manager for orchestrating message exchanges between LLMs.
 from typing import List, Dict, Any, Tuple, Optional
 from pathlib import Path
 
-from models.base import BaseLLM
-from communication.validator import ResponseValidator
+from src.models.base import BaseLLM
+from src.communication.validator import ResponseValidator
 from experiment.context import ContextBuilder
 from game.state import GameState
 
