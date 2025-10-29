@@ -49,9 +49,9 @@ models:
   # Note: Player 1 is always the first speaker in communication
   pairs:
     - [0, 0]  # gpt-3.5-turbo vs gpt-3.5-turbo
-    - [0, 1]  # gpt-3.5-turbo (first speaker) vs gemini-2.0-flash-exp
-    - [1, 0]  # gemini-2.0-flash-exp (first speaker) vs gpt-3.5-turbo
-    - [1, 1]  # gemini-2.0-flash-exp vs gemini-2.0-flash-exp
+    # - [0, 1]  # gpt-3.5-turbo (first speaker) vs gemini-2.0-flash-exp
+    # - [1, 0]  # gemini-2.0-flash-exp (first speaker) vs gpt-3.5-turbo
+    # - [1, 1]  # gemini-2.0-flash-exp vs gemini-2.0-flash-exp
 
 # Communication Configuration
 communication:
