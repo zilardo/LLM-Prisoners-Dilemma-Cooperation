@@ -3,6 +3,7 @@ Google Gemini LLM interface implementation.
 """
 
 import os
+import re
 from typing import Optional
 import google.generativeai as genai
 from .base import BaseLLM
@@ -76,8 +77,19 @@ class GeminiModel(BaseLLM):
             
             response = self.model.generate_content(full_prompt)
             
-            # Extract text from response
-            return response.text
+            text = response.text
+            
+            # Use regex to find the first and largest JSON object.
+            # re.DOTALL makes '.' match newlines, which is crucial.
+            match = re.search(r"\{.*\}", text, re.DOTALL)
+            
+            if match:
+                # Return just the matched JSON string
+                return match.group(0).strip()
+            else:
+                # If no JSON object is found, return the original text
+                # so it can be logged by the validator.
+                return text
             
         except Exception as e:
             raise Exception(f"Gemini API call failed: {str(e)}")
