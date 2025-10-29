@@ -7,8 +7,8 @@ from pathlib import Path
 
 from src.models.base import BaseLLM
 from src.communication.validator import ResponseValidator
-from experiment.context import ContextBuilder
-from game.state import GameState
+from src.experiment.context import ContextBuilder
+from src.game.state import GameState
 
 
 class CommunicationManager:
