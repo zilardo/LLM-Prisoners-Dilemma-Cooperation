@@ -8,15 +8,15 @@ from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 from datetime import datetime
 
-from src.models.base import BaseLLM
-from src.models.openai_model import OpenAIModel
-from src.models.gemini_model import GeminiModel
-from src.game.engine import GameEngine
-from src.game.payoffs import PayoffMatrix
-from src.communication.manager import CommunicationManager
-from src.communication.validator import ResponseValidator
-from src.experiment.context import ContextBuilder
-from src.experiment.config import ExperimentConfig
+from ..models.base import BaseLLM
+from ..models.openai_model import OpenAIModel
+from ..models.gemini_model import GeminiModel
+from ..game.engine import GameEngine
+from ..game.payoffs import PayoffMatrix
+from ..communication.manager import CommunicationManager
+from ..communication.validator import ResponseValidator
+from .context import ContextBuilder
+from .config import ExperimentConfig
 
 
 class ExperimentOrchestrator:
