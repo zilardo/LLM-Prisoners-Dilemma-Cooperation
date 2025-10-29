@@ -8,15 +8,15 @@ from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 from datetime import datetime
 
-from ..models.base import BaseLLM
-from ..models.openai_model import OpenAIModel
-from ..models.gemini_model import GeminiModel
-from ..game.engine import GameEngine
-from ..game.payoffs import PayoffMatrix
-from ..communication.manager import CommunicationManager
-from ..communication.validator import ResponseValidator
-from .context import ContextBuilder
-from .config import ExperimentConfig
+from src.models.base import BaseLLM
+from src.models.openai_model import OpenAIModel
+from src.models.gemini_model import GeminiModel
+from src.game.engine import GameEngine
+from src.game.payoffs import PayoffMatrix
+from src.communication.manager import CommunicationManager
+from src.communication.validator import ResponseValidator
+from src.experiment.context import ContextBuilder
+from src.experiment.config import ExperimentConfig
 
 
 class ExperimentOrchestrator:
@@ -196,9 +196,22 @@ class ExperimentOrchestrator:
         return None
     
     def _format_decision_prompt(self, context: dict) -> str:
-        """Format decision prompt - implement based on your template."""
-        # TODO: Properly format using the prompt template
-        return "Make your decision..."
+        """Format decision prompt from context and template."""
+        # Load the decision prompt template
+        with open("prompts/decision_prompt.txt", 'r') as f:
+            template = f.read()
+        
+        # Use the pre-formatted strings from context
+        return template.format(
+            current_round=context['current_round'],
+            total_rounds=context['total_rounds'],
+            my_score=context['game_state']['my_score'],
+            opponent_score=context['game_state']['opponent_score'],
+            opponent_actions=context['opponent_actions_formatted'],
+            communication_section=context['communication_section'],
+            my_reasoning_history=context['my_reasoning_formatted'],
+            max_reasoning_chars=context['max_reasoning_chars']
+        )
     
     def run_series(self, model_pair: Tuple[int, int], condition: dict,
                   repetition: int) -> dict:
