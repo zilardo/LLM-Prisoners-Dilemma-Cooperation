@@ -188,7 +188,7 @@ class ExperimentOrchestrator:
                 if result.is_valid:
                     return result.parsed_data
                 
-                self.logger.warning(f"Invalid decision (attempt {attempt + 1}): {result.error_message}")
+                self.logger.warning(f"Invalid decision (attempt {attempt + 1}): {result.error_message}. Raw response: '{response}'")
                 
             except Exception as e:
                 self.logger.error(f"Decision generation error: {e}")
